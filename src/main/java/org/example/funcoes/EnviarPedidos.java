@@ -1,4 +1,4 @@
-package org.example;
+package org.example.funcoes;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -20,12 +20,10 @@ public class EnviarPedidos {
             channel.queueDeclare("pedidos", false, false, false, null);
 
             for (Pedido pedido : pedidos) {
-                String pedidoJSON = pedido.toString();
-                channel.basicPublish("", "pedidos", null, pedidoJSON.getBytes(StandardCharsets.UTF_8));
-                System.out.println(pedidoJSON);
+                channel.basicPublish("", "pedidos", null, pedido.toString().getBytes(StandardCharsets.UTF_8));
             }
 
-            System.out.println("[Criador] Pedidos enviados");
+            System.out.println("Pedidos enviados");
         } catch (Exception e) {
             e.printStackTrace();
         }
