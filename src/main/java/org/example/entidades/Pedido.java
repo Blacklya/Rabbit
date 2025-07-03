@@ -1,5 +1,6 @@
 package org.example.entidades;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -31,6 +32,32 @@ public class Pedido {
             produtos.put(produto.toJSON());
         }
         return produtos;
+    }
+
+    public static Pedido converteDeJSON(JSONObject JSONPedido) {
+        List<Produto> produtos = new ArrayList<>();
+
+        JSONArray JSONProdutos = JSONPedido.getJSONArray("produtos");
+        for (int i = 0; i < JSONProdutos.length(); i++) {
+            produtos.add(new Produto(
+                    JSONProdutos.getJSONObject(i).getString("nome"),
+                    JSONProdutos.getJSONObject(i).getDouble("valor")
+            ));
+        }
+
+        return new Pedido(
+                JSONPedido.getString("cliente"),
+                JSONPedido.getString("email"),
+                produtos
+        );
+    }
+
+    public double totalPedido() {
+        double total = 0;
+        for (Produto produto : produtos) {
+            total += produto.valor;
+        }
+        return total;
     }
 
 }

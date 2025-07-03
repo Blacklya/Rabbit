@@ -28,8 +28,10 @@ public class SalvarPedidos {
                 System.out.println("Pedido recebido");
 
                 salvarPedido(new JSONObject(pedido));
-
                 System.out.println("Pedido salvo");
+
+                enviarEmail(pedido);
+                System.out.println("Email enviado");
             }, nome -> { });
 
         } catch (Exception e) {
@@ -37,29 +39,24 @@ public class SalvarPedidos {
         }
     }
 
+    private static void enviarEmail(String pedido) {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+
+        try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
+            channel.queueDeclare("email", false, false, false, null);
+
+            channel.basicPublish("", "email", null, pedido.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void salvarPedido(JSONObject JSONPedido) {
-        Pedido pedido = converteJSONPedido(JSONPedido);
+        Pedido pedido = Pedido.converteDeJSON(JSONPedido);
 
         Banco banco = new Banco();
         banco.salvarPedido(pedido);
         banco.fecharConexao();
-    }
-
-    private static Pedido converteJSONPedido(JSONObject JSONPedido) {
-        List<Produto> produtos = new ArrayList<>();
-
-        JSONArray JSONProdutos = JSONPedido.getJSONArray("produtos");
-        for (int i = 0; i < JSONProdutos.length(); i++) {
-            produtos.add(new Produto(
-                    JSONProdutos.getJSONObject(i).getString("nome"),
-                    JSONProdutos.getJSONObject(i).getDouble("valor")
-            ));
-        }
-
-        return new Pedido(
-                JSONPedido.getString("cliente"),
-                JSONPedido.getString("email"),
-                produtos
-        );
     }
 }
