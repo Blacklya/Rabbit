@@ -8,7 +8,7 @@ import org.json.JSONObject;
 public class Pedido {
     final public String cliente;
     final public String email;
-    final List<Produto> produtos;
+    final public List<Produto> produtos;
 
     public Pedido(String cliente, String email, List<Produto> produtos) {
         this.cliente = cliente;

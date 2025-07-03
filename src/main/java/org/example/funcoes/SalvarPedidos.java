@@ -3,9 +3,15 @@ package org.example.funcoes;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import org.example.dao.Banco;
 import org.example.entidades.Pedido;
+import org.example.entidades.Produto;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SalvarPedidos {
     public static void main(String[] args) {
@@ -19,9 +25,9 @@ public class SalvarPedidos {
 
             channel.basicConsume("pedidos", true, (nome, envio) -> {
                 String pedido = new String(envio.getBody(), StandardCharsets.UTF_8);
-                System.out.println("Pedido recebido:");
+                System.out.println("Pedido recebido");
 
-                salvarPedido(pedido);
+                salvarPedido(new JSONObject(pedido));
 
                 System.out.println("Pedido salvo");
             }, nome -> { });
@@ -31,7 +37,29 @@ public class SalvarPedidos {
         }
     }
 
-    private static void salvarPedido(String pedido) {
+    private static void salvarPedido(JSONObject JSONPedido) {
+        Pedido pedido = converteJSONPedido(JSONPedido);
 
+        Banco banco = new Banco();
+        banco.salvarPedido(pedido);
+        banco.fecharConexao();
+    }
+
+    private static Pedido converteJSONPedido(JSONObject JSONPedido) {
+        List<Produto> produtos = new ArrayList<>();
+
+        JSONArray JSONProdutos = JSONPedido.getJSONArray("produtos");
+        for (int i = 0; i < JSONProdutos.length(); i++) {
+            produtos.add(new Produto(
+                    JSONProdutos.getJSONObject(i).getString("nome"),
+                    JSONProdutos.getJSONObject(i).getDouble("valor")
+            ));
+        }
+
+        return new Pedido(
+                JSONPedido.getString("cliente"),
+                JSONPedido.getString("email"),
+                produtos
+        );
     }
 }
