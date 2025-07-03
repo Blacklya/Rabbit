@@ -17,16 +17,16 @@ public class EnviarPedidos {
 
         List<Pedido> pedidos = criarPedidos();
 
-        try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
-            channel.queueDeclare("pedidos", false, false, false, null);
+        for (Pedido pedido : pedidos) {
+            try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
+                channel.queueDeclare("pedidos", false, false, false, null);
 
-            for (Pedido pedido : pedidos) {
                 channel.basicPublish("", "pedidos", null, pedido.toString().getBytes(StandardCharsets.UTF_8));
-            }
 
-            System.out.println("Pedidos enviados");
-        } catch (Exception e) {
-            e.printStackTrace();
+                System.out.println("Pedidos enviados");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
